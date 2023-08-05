@@ -1,5 +1,5 @@
 # params for prediction engine
-use_gpu: true
+use_gpu: false
 ir_optim: true
 enable_mkldnn: false
 # use_zero_copy_run: true
@@ -10,7 +10,8 @@ gpu_mem: 2000
 
 # params for text detector
 det_algorithm: "DB"
-det_model_dir: "https://paddleocr.bj.bcebos.com/20-09-22/mobile/det/ch_ppocr_mobile_v1.1_det_infer.tar"
+det_model_dir: "/home/ye/ye/project/goface/data/models/pd/det"
+#det_model_dir: "https://paddleocr.bj.bcebos.com/20-09-22/mobile/det/ch_ppocr_mobile_v1.1_det_infer.tar"
 det_max_side_len: 960
 
 # DB parmas
@@ -25,7 +26,7 @@ det_east_nms_thresh: 0.2
 
 # params for text recognizer
 rec_algorithm: "CRNN"
-rec_model_dir: "https://paddleocr.bj.bcebos.com/20-09-22/mobile/rec/ch_ppocr_mobile_v1.1_rec_infer.tar"
+rec_model_dir: "/home/ye/ye/project/goface/data/models/pd/rec"
 rec_image_shape: [3, 32, 320]
 rec_char_type: "ch"
 rec_batch_num: 30

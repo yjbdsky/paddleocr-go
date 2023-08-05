@@ -36,6 +36,20 @@ func getInt(args map[string]interface{}, key string, dv int) int {
 	return dv
 }
 
+func getUint64(args map[string]interface{}, key string, dv int) uint64 {
+	if i, ok := args[key]; ok {
+		return uint64(i.(int))
+	}
+	return uint64(dv)
+}
+
+func getInt32(args map[string]interface{}, key string, dv int) int32 {
+	if i, ok := args[key]; ok {
+		return int32(i.(int))
+	}
+	return int32(dv)
+}
+
 func getBool(args map[string]interface{}, key string, dv bool) bool {
 	if b, ok := args[key]; ok {
 		return b.(bool)
@@ -113,7 +127,7 @@ func argmax(arr []float32) (int, float32) {
 }
 
 func checkModelExists(modelPath string) bool {
-	if isPathExist(modelPath+"/model") && isPathExist(modelPath+"/params") {
+	if isPathExist(modelPath) {
 		return true
 	}
 	if strings.HasPrefix(modelPath, "http://") ||

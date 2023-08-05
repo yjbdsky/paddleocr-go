@@ -79,24 +79,26 @@ func (rec *TextRecognizer) Run(imgs []gocv.Mat, bboxes [][][]int) []OCRText {
 		}
 
 		st := time.Now()
-		rec.input.SetValue(normimgs)
+		rec.input.CopyFromCpu(normimgs)
 		rec.input.Reshape([]int32{int32(j - i), int32(c), int32(h), int32(w)})
 
-		rec.predictor.SetZeroCopyInput(rec.input)
-		rec.predictor.ZeroCopyRun()
-		rec.predictor.GetZeroCopyOutput(rec.outputs[0])
-		rec.predictor.GetZeroCopyOutput(rec.outputs[1])
+		rec.predictor.Run()
 
-		recIdxBatch := rec.outputs[0].Value().([][]int64)
+		//rec.predictor.GetZeroCopyOutput(rec.outputs[0])
+		//rec.predictor.GetZeroCopyOutput(rec.outputs[1])
+
+		recIdxBatch := make([][]int64, numElements(rec.outputs[0].Shape()))
+		rec.outputs[0].CopyToCpu(recIdxBatch)
 		recIdxLod := rec.outputs[0].Lod()
 
-		predictBatch := rec.outputs[1].Value().([][]float32)
+		predictBatch := make([][]float32, numElements(rec.outputs[0].Shape()))
+		rec.outputs[0].CopyToCpu(predictBatch)
 		predictLod := rec.outputs[1].Lod()
 		recTime += int64(time.Since(st).Milliseconds())
 
 		for rno := 0; rno < len(recIdxLod)-1; rno++ {
 			predIdx := make([]int, 0, 2)
-			for beg := recIdxLod[rno]; beg < recIdxLod[rno+1]; beg++ {
+			for beg := recIdxLod[rno][0]; beg < recIdxLod[rno+1][0]; beg++ {
 				predIdx = append(predIdx, int(recIdxBatch[beg][0]))
 			}
 			if len(predIdx) == 0 {
@@ -110,7 +112,7 @@ func (rec *TextRecognizer) Run(imgs []gocv.Mat, bboxes [][][]int) []OCRText {
 			score := 0.0
 			count := 0
 			blankPosition := int(rec.outputs[1].Shape()[1])
-			for beg := predictLod[rno]; beg < predictLod[rno+1]; beg++ {
+			for beg := predictLod[rno][0]; beg < predictLod[rno+1][0]; beg++ {
 				argMaxID, maxVal := argmax(predictBatch[beg])
 				if blankPosition-1-argMaxID > 0 {
 					score += float64(maxVal)

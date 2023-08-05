@@ -1,10 +1,10 @@
 package ocr
 
 import (
+	paddle "github.com/paddlepaddle/paddle/paddle/fluid/inference/goapi"
 	"image"
 	"image/color"
 	"math"
-	"paddleocr-go/paddle"
 	"sort"
 
 	"github.com/LKKlein/gocv"
@@ -24,7 +24,7 @@ func (a xIntSortBy) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a xIntSortBy) Less(i, j int) bool { return a[i][0] < a[j][0] }
 
 type DetPostProcess interface {
-	Run(output *paddle.ZeroCopyTensor, oriH, oriW int, ratioH, ratioW float64) [][][]int
+	Run(output *paddle.Tensor, oriH, oriW int, ratioH, ratioW float64) [][][]int
 }
 
 type DBPostProcess struct {
@@ -234,9 +234,17 @@ func (d *DBPostProcess) filterTagDetRes(boxes [][][]int, oriH, oriW int) [][][]i
 	}
 	return points
 }
-
-func (d *DBPostProcess) Run(output *paddle.ZeroCopyTensor, oriH, oriW int, ratioH, ratioW float64) [][][]int {
-	v := output.Value().([][][][]float32)
+func numElements(shape []int32) int32 {
+	n := int32(1)
+	for _, v := range shape {
+		n *= v
+	}
+	return n
+}
+func (d *DBPostProcess) Run(output *paddle.Tensor, oriH, oriW int, ratioH, ratioW float64) [][][]int {
+	//v := output.Value().([][][][]float32)
+	v := make([][][][]float32, numElements(output.Shape()))
+	output.CopyToCpu(v)
 
 	shape := output.Shape()
 	height, width := int(shape[2]), int(shape[3])

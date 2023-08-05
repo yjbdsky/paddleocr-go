@@ -40,12 +40,12 @@ func (det *DBDetector) Run(img gocv.Mat) [][][]int {
 	oriW := img.Cols()
 	data, resizeH, resizeW := det.preProcess.Run(img)
 	st := time.Now()
-	det.input.SetValue(data)
+	det.input.CopyFromCpu(data)
 	det.input.Reshape([]int32{1, 3, int32(resizeH), int32(resizeW)})
 
-	det.predictor.SetZeroCopyInput(det.input)
-	det.predictor.ZeroCopyRun()
-	det.predictor.GetZeroCopyOutput(det.outputs[0])
+	det.predictor.Run()
+	//det.predictor.GetZeroCopyOutput(det.outputs[0])
+	//det.outputs[0].CopyToCpu()
 
 	ratioH, ratioW := float64(resizeH)/float64(oriH), float64(resizeW)/float64(oriW)
 	boxes := det.postProcess.Run(det.outputs[0], oriH, oriW, ratioH, ratioW)
